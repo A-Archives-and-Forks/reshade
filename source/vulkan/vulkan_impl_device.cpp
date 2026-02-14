@@ -696,8 +696,7 @@ bool reshade::vulkan::device_impl::create_resource(const api::resource_desc &des
 						}
 
 						// Always flush right away, in case resource is destroyed again before an explicit flush of the immediate command list
-						VkSubmitInfo semaphore_info { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-						immediate_command_list->flush(semaphore_info);
+						immediate_command_list->flush(nullptr);
 					}
 					else if (initial_data != nullptr)
 					{
@@ -1136,7 +1135,7 @@ void reshade::vulkan::device_impl::update_buffer_region(const void *data, api::r
 
 	vk.CmdUpdateBuffer(immediate_command_list->_orig, (VkBuffer)resource.handle, offset, size, data);
 
-	immediate_command_list->flush_and_wait();
+	immediate_command_list->flush(nullptr);
 }
 void reshade::vulkan::device_impl::update_texture_region(const api::subresource_data &data, api::resource resource, uint32_t subresource, const api::subresource_box *box)
 {
@@ -1244,7 +1243,7 @@ void reshade::vulkan::device_impl::update_texture_region(const api::subresource_
 		immediate_command_list->copy_buffer_to_texture({ (uint64_t)intermediate }, 0, 0, 0, resource, subresource, box);
 
 		// Wait for command to finish executing before destroying the upload buffer
-		immediate_command_list->flush_and_wait();
+		immediate_command_list->flush(nullptr);
 	}
 
 	vmaDestroyBuffer(_alloc, intermediate, intermediate_mem);
@@ -2385,12 +2384,11 @@ bool reshade::vulkan::device_impl::create_query_heap(api::query_type type, uint3
 #endif
 		if (const auto immediate_command_list = get_immediate_command_list())
 		{
-			vk.CmdResetQueryPool(immediate_command_list->_orig, pool, 0, count);
-
 			immediate_command_list->_has_commands = true;
 
-			VkSubmitInfo semaphore_info { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-			immediate_command_list->flush(semaphore_info);
+			vk.CmdResetQueryPool(immediate_command_list->_orig, pool, 0, count);
+
+			immediate_command_list->flush(nullptr);
 		}
 
 		*out_heap = { (uint64_t)pool };
@@ -2645,7 +2643,7 @@ bool reshade::vulkan::device_impl::get_pipeline_shader_group_handles(api::pipeli
 
 reshade::vulkan::command_list_immediate_impl *reshade::vulkan::device_impl::get_immediate_command_list()
 {
-	// Choosing the right queue is a delicate situation, since it is possible to deadlock when choosing a queue (and using 'flush_and_wait') that is waiting on a fence yet to be signaled by the current thread
+	// Choosing the right queue is a delicate situation, since it is possible to deadlock when choosing a queue (and using 'flush') that is waiting on a fence yet to be signaled by the current thread
 	// Prefer the last immediate command list used on this thread, as that is less likely to wait on another thread to signal
 	const auto last_immediate_command_list = command_list_immediate_impl::s_last_immediate_command_list;
 	if (last_immediate_command_list != nullptr && last_immediate_command_list->get_device() == this)

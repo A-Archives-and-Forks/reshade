@@ -831,7 +831,7 @@ VkResult VKAPI_CALL vkQueueSubmit(VkQueue queue, uint32_t submitCount, const VkS
 			reshade::invoke_addon_event<reshade::addon_event::execute_command_list>(queue_impl, cmd_impl);
 		}
 
-		queue_impl->flush_immediate_command_list(const_cast<VkSubmitInfo &>(submit_info));
+		queue_impl->flush_immediate_command_list(const_cast<VkSubmitInfo *>(&submit_info));
 	}
 #endif
 

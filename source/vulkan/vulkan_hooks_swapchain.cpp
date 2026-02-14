@@ -561,7 +561,7 @@ VkResult VKAPI_CALL vkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR *pPr
 		submit_info.pWaitSemaphores = present_info.pWaitSemaphores;
 		submit_info.pWaitDstStageMask = wait_stages.p;
 
-		queue_impl->flush_immediate_command_list(submit_info);
+		queue_impl->flush_immediate_command_list(&submit_info);
 
 		// If the application is presenting with a different queue than rendering, synchronize these two queues
 		if (present_from_secondary_queue)
@@ -590,7 +590,7 @@ VkResult VKAPI_CALL vkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR *pPr
 
 			// This can deadlock on the GPU if the application submitted a semaphore wait to the graphics queue before this call, for which it submits the corresponding signal to the present queue only after this call
 			// E.g. happens with DLSS Frame Generation
-			device_impl->_primary_graphics_queue->flush_immediate_command_list(submit_info);
+			device_impl->_primary_graphics_queue->flush_immediate_command_list(&submit_info);
 		}
 
 		// Override wait semaphores based on the last queue submit
