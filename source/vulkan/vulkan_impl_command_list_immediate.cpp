@@ -70,7 +70,7 @@ reshade::vulkan::command_list_immediate_impl::command_list_immediate_impl(device
 		if (!vk.KHR_push_descriptor)
 #endif
 		{
-			const VkDescriptorPoolSize pool_sizes[] = {
+			constexpr VkDescriptorPoolSize pool_sizes[] = {
 				{ VK_DESCRIPTOR_TYPE_SAMPLER, 128 },
 				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 },
 				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1024 },
@@ -189,8 +189,7 @@ void reshade::vulkan::command_list_immediate_impl::push_descriptors(api::shader_
 
 	assert(update.binding == 0 && update.array_offset == 0);
 
-	const VkPipelineLayout pipeline_layout = (VkPipelineLayout)layout.handle;
-	const VkDescriptorSetLayout set_layout = (VkDescriptorSetLayout)_device_impl->get_private_data_for_object<VK_OBJECT_TYPE_PIPELINE_LAYOUT>(pipeline_layout)->set_layouts[layout_param];
+	VkDescriptorSetLayout set_layout = (VkDescriptorSetLayout)_device_impl->get_private_data_for_object<VK_OBJECT_TYPE_PIPELINE_LAYOUT>((VkPipelineLayout)layout.handle)->set_layouts[layout_param];
 
 	VkDescriptorSetAllocateInfo alloc_info { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
 	alloc_info.descriptorPool = _transient_descriptor_pool[_cmd_index];
