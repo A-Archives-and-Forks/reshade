@@ -274,8 +274,7 @@ bool reshade::vulkan::command_list_immediate_impl::flush(VkSubmitInfo &semaphore
 	// The next queue submit should therefore wait on the semaphore that was signaled by this submit
 	semaphore_info.waitSemaphoreCount = submit_info.signalSemaphoreCount;
 	semaphore_info.pWaitSemaphores = submit_info.pSignalSemaphores;
-	static const VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-	semaphore_info.pWaitDstStageMask = &wait_stage;
+	assert(semaphore_info.pWaitDstStageMask != nullptr || semaphore_info.waitSemaphoreCount == 0);
 
 	// Continue with next command buffer now that the current one was submitted
 	_cmd_index = (_cmd_index + 1) % NUM_COMMAND_FRAMES;
