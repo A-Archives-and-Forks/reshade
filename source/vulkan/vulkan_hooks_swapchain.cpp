@@ -578,8 +578,6 @@ VkResult VKAPI_CALL vkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR *pPr
 		present_info.pWaitSemaphores = submit_info.pWaitSemaphores;
 	}
 
-	device_impl->advance_transient_descriptor_pool();
-
 	RESHADE_VULKAN_GET_DEVICE_DISPATCH_PTR(QueuePresentKHR, device_impl);
 	assert(!g_in_dxgi_runtime);
 	g_in_dxgi_runtime = true;
