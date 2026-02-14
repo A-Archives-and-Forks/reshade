@@ -590,6 +590,8 @@ VkResult VKAPI_CALL vkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR *pPr
 				}
 			}
 
+			// This can deadlock on the GPU if the application submitted a semaphore wait to the graphics queue before this call, for which it submits the corresponding signal to the present queue only after this call
+			// E.g. happens with DLSS Frame Generation
 			device_impl->_primary_graphics_queue->flush_immediate_command_list(submit_info);
 		}
 
