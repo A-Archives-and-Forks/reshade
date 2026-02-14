@@ -1445,6 +1445,9 @@ void reshade::vulkan::command_list_impl::query_acceleration_structures(uint32_t 
 
 void reshade::vulkan::command_list_impl::update_buffer_region(const void *data, api::resource dest, uint64_t dest_offset, uint64_t size)
 {
+	if (UINT64_MAX == size)
+		size = _device_impl->get_private_data_for_object<VK_OBJECT_TYPE_BUFFER>((VkBuffer)dest.handle)->create_info.size;
+
 	_has_commands = true;
 
 	vk.CmdUpdateBuffer(_orig, (VkBuffer)dest.handle, dest_offset, size, data);

@@ -21,6 +21,9 @@ namespace reshade::vulkan
 
 		void push_descriptors(api::shader_stage stages, api::pipeline_layout layout, uint32_t layout_param, const api::descriptor_table_update &update) final;
 
+		void update_buffer_region(const void *data, api::resource dest, uint64_t dest_offset, uint64_t size) final;
+		void update_texture_region(const api::subresource_data &data, api::resource dest, uint32_t dest_subresource, const api::subresource_box *dest_box) final;
+
 		bool flush(VkSubmitInfo &semaphore_info);
 		bool flush_and_wait();
 

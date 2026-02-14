@@ -208,6 +208,19 @@ void reshade::vulkan::command_list_immediate_impl::push_descriptors(api::shader_
 	bind_descriptor_tables(stages, layout, layout_param, 1, reinterpret_cast<const api::descriptor_table *>(&write.dstSet));
 }
 
+void reshade::vulkan::command_list_immediate_impl::update_buffer_region(const void *data, api::resource dest, uint64_t dest_offset, uint64_t size)
+{
+	s_last_immediate_command_list = this;
+
+	command_list_impl::update_buffer_region(data, dest, dest_offset, size);
+}
+void reshade::vulkan::command_list_immediate_impl::update_texture_region(const api::subresource_data &data, api::resource dest, uint32_t dest_subresource, const api::subresource_box *dest_box)
+{
+	s_last_immediate_command_list = this;
+
+	_device_impl->update_texture_region(data, dest, dest_subresource, dest_box);
+}
+
 bool reshade::vulkan::command_list_immediate_impl::flush(VkSubmitInfo &semaphore_info)
 {
 	s_last_immediate_command_list = this;
