@@ -30,7 +30,7 @@ extern "C" PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, co
 extern "C" PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char *pName);
 
 #define HR_CHECK(exp) { const HRESULT res = (exp); assert(SUCCEEDED(res)); }
-#define VK_CHECK(exp) { const VkResult res = (exp); assert(res == VK_SUCCESS); }
+#define VK_CHECK(exp) { const VkResult res = (exp); assert(res >= VK_SUCCESS); }
 
 struct scoped_module_handle
 {
