@@ -558,12 +558,12 @@ bool reshade::vulkan::device_impl::create_resource(const api::resource_desc &des
 
 			// Initial data upload requires the image to be transferable to
 			if (create_info.usage == 0 || initial_data != nullptr)
-				create_info.usage |=
+				create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 #if VK_EXT_host_image_copy
-					vk.EXT_host_image_copy ?
-						VK_IMAGE_USAGE_HOST_TRANSFER_BIT :
+			// Only use host image copy for host-coherent images
+			if (desc.heap == api::memory_heap::cpu_to_gpu && (desc.usage & api::resource_usage::copy_dest) != 0 && vk.EXT_host_image_copy)
+				create_info.usage |= VK_IMAGE_USAGE_HOST_TRANSFER_BIT;
 #endif
-						VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 			// Default view creation for resolving requires image to have a usage usable for view creation
 			if (desc.heap != api::memory_heap::unknown && !is_shared && (desc.usage & (api::resource_usage::resolve_source | api::resource_usage::resolve_dest)) != 0)
 				create_info.usage |= (aspect_flags_from_format(create_info.format) & (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)) != 0 ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -644,37 +644,6 @@ bool reshade::vulkan::device_impl::create_resource(const api::resource_desc &des
 
 				if (initial_state != api::resource_usage::undefined)
 				{
-#if VK_EXT_host_image_copy
-					if (vk.EXT_host_image_copy && (create_info.usage & VK_IMAGE_USAGE_HOST_TRANSFER_BIT) != 0)
-					{
-						VkHostImageLayoutTransitionInfo transition { VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO };
-						transition.image = object;
-						transition.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-						transition.subresourceRange = { aspect_flags_from_format(create_info.format), 0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS };
-
-						if (initial_data != nullptr)
-						{
-							transition.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-
-							vk.TransitionImageLayout(_orig, 1, &transition);
-
-							for (uint32_t subresource = 0; subresource < (desc.type == api::resource_type::texture_3d ? 1u : static_cast<uint32_t>(desc.texture.depth_or_layers)) * desc.texture.levels; ++subresource)
-								update_texture_region(initial_data[subresource], *out_resource, subresource, nullptr);
-
-							transition.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-							transition.newLayout = convert_usage_to_image_layout(initial_state);
-
-							vk.TransitionImageLayout(_orig, 1, &transition);
-						}
-						else
-						{
-							transition.newLayout = convert_usage_to_image_layout(initial_state);
-
-							vk.TransitionImageLayout(_orig, 1, &transition);
-						}
-					}
-					else
-#endif
 					// Transition resource into the initial state using the first available immediate command list
 					if (const auto immediate_command_list = get_immediate_command_list())
 					{
