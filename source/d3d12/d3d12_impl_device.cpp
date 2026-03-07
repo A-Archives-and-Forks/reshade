@@ -27,7 +27,7 @@ constexpr size_t heap_index_start = 28;
 
 static auto adapter_from_device(ID3D12Device *device, DXGI_ADAPTER_DESC *adapter_desc) -> const com_ptr<IDXGIAdapter>
 {
-	const auto dxgi_module = GetModuleHandleW(L"dxgi.dll");
+	const HMODULE dxgi_module = GetModuleHandleW(L"dxgi.dll");
 	assert(dxgi_module != nullptr);
 	auto CreateDXGIFactory1_orig = reinterpret_cast<decltype(&CreateDXGIFactory1)>(GetProcAddress(dxgi_module, "CreateDXGIFactory1"));
 	if (reshade::hooks::is_hooked(CreateDXGIFactory1_orig))
@@ -1458,7 +1458,7 @@ bool reshade::d3d12::device_impl::create_pipeline_layout(uint32_t param_count, c
 		}
 	}
 
-	const auto d3d12_module = GetModuleHandleW(L"d3d12.dll");
+	const HMODULE d3d12_module = GetModuleHandleW(L"d3d12.dll");
 	assert(d3d12_module != nullptr);
 	const auto D3D12SerializeRootSignature = reinterpret_cast<HRESULT(WINAPI *)(const D3D12_ROOT_SIGNATURE_DESC *pRootSignature, D3D_ROOT_SIGNATURE_VERSION Version, ID3DBlob **ppBlob, ID3DBlob **ppErrorBlob)>(GetProcAddress(d3d12_module, "D3D12SerializeRootSignature"));
 	assert(D3D12SerializeRootSignature != nullptr);
